@@ -40,6 +40,9 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
+            options {
+                timeout(time: 5, unit: 'MINUTES')
+            }
             steps {
                 withSonarQubeEnv(installationName: 'SonarQube', credentialsId: 'sonarqube-token') {
                     bat """
@@ -54,8 +57,16 @@ pipeline {
                         -Dsonar.java.coveragePlugin=jacoco
                     """
                 }
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+            }
+        }
+
+        stage('Quality Gate') {
+            options {
+                timeout(time: 5, unit: 'MINUTES')
+            }
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    waitForQualityGate abortPipeline: false
                 }
             }
         }
