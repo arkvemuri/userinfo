@@ -4,12 +4,10 @@ import com.codedecode.userinfo.dto.UserDTO;
 import com.codedecode.userinfo.entity.User;
 import com.codedecode.userinfo.mapper.UserMapper;
 import com.codedecode.userinfo.repo.UserRepo;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.Optional;
 
 @Service
 public class UserService {
