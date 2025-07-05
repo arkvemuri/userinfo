@@ -40,25 +40,24 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            environment {
-                SONAR_CREDS = credentials('sonarqube-token')
-            }
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    bat """
-                        mvn sonar:sonar \
-                        -Dsonar.host.url=http://localhost:9000 \
-                        -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} \
-                        -Dsonar.projectName=${env.SONAR_PROJECT_KEY} \
-                        -Dsonar.projectVersion=${APP_VERSION} \
-                        -Dsonar.sources=src/main/java \
-                        -Dsonar.java.binaries=target/classes \
-                        -Dsonar.tests=src/test/java \
-                        -Dsonar.junit.reportPaths=target/surefire-reports \
-                        -Dsonar.java.coveragePlugin=jacoco \
-                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-                        -Dsonar.login=${SONAR_CREDS_PSW}
-                    """
+                withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                    withSonarQubeEnv('SonarQube') {
+                        bat """
+                            mvn sonar:sonar \
+                            -Dsonar.host.url=http://localhost:9000 \
+                            -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} \
+                            -Dsonar.projectName=${env.SONAR_PROJECT_KEY} \
+                            -Dsonar.projectVersion=${APP_VERSION} \
+                            -Dsonar.sources=src/main/java \
+                            -Dsonar.java.binaries=target/classes \
+                            -Dsonar.tests=src/test/java \
+                            -Dsonar.junit.reportPaths=target/surefire-reports \
+                            -Dsonar.java.coveragePlugin=jacoco \
+                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                            -Dsonar.login=${SONAR_TOKEN}
+                        """
+                    }
                 }
             }
         }
