@@ -70,12 +70,22 @@ class UserControllerTest {
 
     private static Stream<Arguments> invalidUserScenarios() {
         return Stream.of(
+            // Invalid username scenarios
             Arguments.of(createInvalidUser("", "password123", "123 Test St", "Test City")),
             Arguments.of(createInvalidUser(null, "password123", "123 Test St", "Test City")),
             Arguments.of(createInvalidUser("   ", "password123", "123 Test St", "Test City")),
+            // Invalid password scenarios
             Arguments.of(createInvalidUser("testUser", "", "123 Test St", "Test City")),
             Arguments.of(createInvalidUser("testUser", null, "123 Test St", "Test City")),
-            Arguments.of(createInvalidUser("testUser", "   ", "123 Test St", "Test City"))
+            Arguments.of(createInvalidUser("testUser", "   ", "123 Test St", "Test City")),
+            // Invalid address scenarios
+            Arguments.of(createInvalidUser("testUser", "password123", "", "Test City")),
+            Arguments.of(createInvalidUser("testUser", "password123", null, "Test City")),
+            Arguments.of(createInvalidUser("testUser", "password123", "   ", "Test City")),
+            // Invalid city scenarios
+            Arguments.of(createInvalidUser("testUser", "password123", "123 Test St", "")),
+            Arguments.of(createInvalidUser("testUser", "password123", "123 Test St", null)),
+            Arguments.of(createInvalidUser("testUser", "password123", "123 Test St", "   "))
         );
     }
 
@@ -114,29 +124,35 @@ class UserControllerTest {
         verify(userService).fetchUserDetailsById(1);
     }
 
-    @Test
-    void fetchUserDetailsById_WithInvalidId_ShouldReturnBadRequest() throws Exception {
-        mockMvc.perform(get("/user/fetchUserById/-1")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+    private static Stream<Arguments> invalidUserIdScenarios() {
+        return Stream.of(
+            Arguments.of(-1, "isBadRequest"), // Invalid negative ID
+            Arguments.of(0, "isBadRequest"),  // Invalid zero ID
+            Arguments.of(999, "isNotFound")   // Non-existent ID
+        );
     }
 
-    @Test
-    void fetchUserDetailsById_WithZeroId_ShouldReturnBadRequest() throws Exception {
-        mockMvc.perform(get("/user/fetchUserById/0")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
+    @ParameterizedTest
+    @MethodSource("invalidUserIdScenarios")
+    void fetchUserDetailsById_WithInvalidId_ShouldReturnExpectedStatus(int userId, String expectedStatus) throws Exception {
+        // Setup mock for non-existent ID scenario
+        if (userId == 999) {
+            when(userService.fetchUserDetailsById(userId))
+                    .thenReturn(ResponseEntity.notFound().build());
+        }
 
-    @Test
-    void fetchUserDetailsById_WithNonExistentId_ShouldReturnNotFound() throws Exception {
-        when(userService.fetchUserDetailsById(999))
-                .thenReturn(ResponseEntity.notFound().build());
+        var requestBuilder = mockMvc.perform(get("/user/fetchUserById/" + userId)
+                .contentType(MediaType.APPLICATION_JSON));
 
-        mockMvc.perform(get("/user/fetchUserById/999")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-
-        verify(userService).fetchUserDetailsById(999);
+        // Assert based on expected status
+        switch (expectedStatus) {
+            case "isBadRequest":
+                requestBuilder.andExpect(status().isBadRequest());
+                break;
+            case "isNotFound":
+                requestBuilder.andExpect(status().isNotFound());
+                verify(userService).fetchUserDetailsById(userId);
+                break;
+        }
     }
 }
