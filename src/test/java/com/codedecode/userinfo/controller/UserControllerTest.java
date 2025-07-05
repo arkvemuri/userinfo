@@ -65,8 +65,88 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_WithInvalidData_ShouldReturnBadRequest() throws Exception {
+    void addUser_WithEmptyUserName_ShouldReturnBadRequest() throws Exception {
         testUserDTO.setUserName("");  // Invalid username
+
+        mockMvc.perform(post("/user/addUser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testUserDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void addUser_WithNullUserName_ShouldReturnBadRequest() throws Exception {
+        testUserDTO.setUserName(null);  // Null username
+
+        mockMvc.perform(post("/user/addUser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testUserDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void addUser_WithWhitespaceUserName_ShouldReturnBadRequest() throws Exception {
+        testUserDTO.setUserName("   ");  // Whitespace only username
+
+        mockMvc.perform(post("/user/addUser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testUserDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void addUser_WithEmptyPassword_ShouldReturnBadRequest() throws Exception {
+        testUserDTO.setUserPassword("");  // Invalid password
+
+        mockMvc.perform(post("/user/addUser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testUserDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void addUser_WithNullPassword_ShouldReturnBadRequest() throws Exception {
+        testUserDTO.setUserPassword(null);  // Null password
+
+        mockMvc.perform(post("/user/addUser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testUserDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void addUser_WithEmptyAddress_ShouldReturnBadRequest() throws Exception {
+        testUserDTO.setAddress("");  // Invalid address
+
+        mockMvc.perform(post("/user/addUser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testUserDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void addUser_WithNullAddress_ShouldReturnBadRequest() throws Exception {
+        testUserDTO.setAddress(null);  // Null address
+
+        mockMvc.perform(post("/user/addUser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testUserDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void addUser_WithEmptyCity_ShouldReturnBadRequest() throws Exception {
+        testUserDTO.setCity("");  // Invalid city
+
+        mockMvc.perform(post("/user/addUser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testUserDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void addUser_WithNullCity_ShouldReturnBadRequest() throws Exception {
+        testUserDTO.setCity(null);  // Null city
 
         mockMvc.perform(post("/user/addUser")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -93,6 +173,13 @@ class UserControllerTest {
     @Test
     void fetchUserDetailsById_WithInvalidId_ShouldReturnBadRequest() throws Exception {
         mockMvc.perform(get("/user/fetchUserById/-1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void fetchUserDetailsById_WithZeroId_ShouldReturnBadRequest() throws Exception {
+        mockMvc.perform(get("/user/fetchUserById/0")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
