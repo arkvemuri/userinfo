@@ -27,15 +27,14 @@ pipeline {
 
         stage('Build') {
             steps {
-                // Build the application and run unit tests
-                sh 'mvn clean package'
+                // Use bat for Windows
+                bat 'mvn clean package'
             }
         }
 
         stage('Test') {
             steps {
-                // Run tests and generate test reports
-                sh 'mvn test'
+                bat 'mvn test'
             }
             post {
                 always {
@@ -47,7 +46,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv(env.SONAR_SERVER) {
-                    sh '''
+                    bat """
                         mvn sonar:sonar \
                         -Dsonar.projectKey=userinfo \
                         -Dsonar.projectName=userinfo \
@@ -58,7 +57,7 @@ pipeline {
                         -Dsonar.junit.reportPaths=target/surefire-reports \
                         -Dsonar.java.coveragePlugin=jacoco \
                         -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-                    '''
+                    """
                 }
             }
         }
