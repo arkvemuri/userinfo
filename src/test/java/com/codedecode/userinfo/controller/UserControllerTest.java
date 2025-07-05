@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -63,93 +68,33 @@ class UserControllerTest {
         verify(userService).addUser(any(UserDTO.class));
     }
 
-    @Test
-    void addUser_WithEmptyUserName_ShouldReturnBadRequest() throws Exception {
-        testUserDTO.setUserName("");  // Invalid username
-
-        mockMvc.perform(post("/user/addUser")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testUserDTO)))
-                .andExpect(status().isBadRequest());
+    private static Stream<Arguments> invalidUserScenarios() {
+        return Stream.of(
+            Arguments.of(createInvalidUser("", "password123", "123 Test St", "Test City")),
+            Arguments.of(createInvalidUser(null, "password123", "123 Test St", "Test City")),
+            Arguments.of(createInvalidUser("   ", "password123", "123 Test St", "Test City")),
+            Arguments.of(createInvalidUser("testUser", "", "123 Test St", "Test City")),
+            Arguments.of(createInvalidUser("testUser", null, "123 Test St", "Test City")),
+            Arguments.of(createInvalidUser("testUser", "   ", "123 Test St", "Test City"))
+        );
     }
 
-    @Test
-    void addUser_WithNullUserName_ShouldReturnBadRequest() throws Exception {
-        testUserDTO.setUserName(null);  // Null username
-
-        mockMvc.perform(post("/user/addUser")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testUserDTO)))
-                .andExpect(status().isBadRequest());
+    private static UserDTO createInvalidUser(String username, String password, String address, String city) {
+        UserDTO dto = new UserDTO();
+        dto.setUserId(1);
+        dto.setUserName(username);
+        dto.setUserPassword(password);
+        dto.setAddress(address);
+        dto.setCity(city);
+        return dto;
     }
 
-    @Test
-    void addUser_WithWhitespaceUserName_ShouldReturnBadRequest() throws Exception {
-        testUserDTO.setUserName("   ");  // Whitespace only username
-
+    @ParameterizedTest
+    @MethodSource("invalidUserScenarios")
+    void addUser_WithInvalidData_ShouldReturnBadRequest(UserDTO invalidUser) throws Exception {
         mockMvc.perform(post("/user/addUser")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testUserDTO)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void addUser_WithEmptyPassword_ShouldReturnBadRequest() throws Exception {
-        testUserDTO.setUserPassword("");  // Invalid password
-
-        mockMvc.perform(post("/user/addUser")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testUserDTO)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void addUser_WithNullPassword_ShouldReturnBadRequest() throws Exception {
-        testUserDTO.setUserPassword(null);  // Null password
-
-        mockMvc.perform(post("/user/addUser")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testUserDTO)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void addUser_WithEmptyAddress_ShouldReturnBadRequest() throws Exception {
-        testUserDTO.setAddress("");  // Invalid address
-
-        mockMvc.perform(post("/user/addUser")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testUserDTO)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void addUser_WithNullAddress_ShouldReturnBadRequest() throws Exception {
-        testUserDTO.setAddress(null);  // Null address
-
-        mockMvc.perform(post("/user/addUser")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testUserDTO)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void addUser_WithEmptyCity_ShouldReturnBadRequest() throws Exception {
-        testUserDTO.setCity("");  // Invalid city
-
-        mockMvc.perform(post("/user/addUser")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testUserDTO)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void addUser_WithNullCity_ShouldReturnBadRequest() throws Exception {
-        testUserDTO.setCity(null);  // Null city
-
-        mockMvc.perform(post("/user/addUser")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testUserDTO)))
+                .content(objectMapper.writeValueAsString(invalidUser)))
                 .andExpect(status().isBadRequest());
     }
 
