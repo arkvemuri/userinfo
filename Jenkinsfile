@@ -41,27 +41,19 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                withSonarQubeEnv(installationName: 'SonarQube', credentialsId: 'sonarqube-token') {
                     bat """
-                        mvn sonar:sonar \
+                        mvn clean verify sonar:sonar \
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                        -Dsonar.projectName=${SONAR_PROJECT_KEY} \
                         -Dsonar.host.url=http://localhost:9000 \
-                        -Dsonar.login=%SONAR_TOKEN% \
-                        -Dsonar.projectKey=userinfo \
-                        -Dsonar.projectName=userinfo \
-                        -Dsonar.projectVersion=${APP_VERSION} \
-                        -Dsonar.sources=src/main/java \
                         -Dsonar.java.binaries=target/classes \
+                        -Dsonar.sources=src/main/java \
                         -Dsonar.tests=src/test/java \
-                        -Dsonar.junit.reportPaths=target/surefire-reports \
-                        -Dsonar.java.coveragePlugin=jacoco \
-                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                        -Dsonar.java.coveragePlugin=jacoco
                     """
                 }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
