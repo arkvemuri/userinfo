@@ -18,7 +18,21 @@ public class UserController {
     }
 
     @PostMapping("/addUser")
-    public ResponseEntity<UserDTO> addUser(@RequestBody @Validated UserDTO userDTO) {
+    public ResponseEntity<UserDTO> addUser(@RequestBody UserDTO userDTO) {
+        // Manual validation
+        if (userDTO.getUserName() == null || userDTO.getUserName().trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (userDTO.getUserPassword() == null || userDTO.getUserPassword().trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (userDTO.getAddress() == null || userDTO.getAddress().trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (userDTO.getCity() == null || userDTO.getCity().trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        
         UserDTO userAdded = userService.addUser(userDTO);
         return new ResponseEntity<>(userAdded, HttpStatus.CREATED);
     }
