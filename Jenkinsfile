@@ -74,7 +74,7 @@ pipeline {
                 script {
                     // Coverage is already checked by Maven JaCoCo plugin during 'mvn clean verify'
                     // If the build reached this stage, coverage requirements are met
-                    echo 'Coverage check passed - Maven JaCoCo plugin enforced minimum 30% coverage'
+                    echo 'Coverage check passed - Maven JaCoCo plugin enforced minimum 30% coverage per class'
                 }
             }
         }
