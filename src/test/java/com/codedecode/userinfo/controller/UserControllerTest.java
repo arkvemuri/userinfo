@@ -153,6 +153,8 @@ class UserControllerTest {
                 requestBuilder.andExpect(status().isNotFound());
                 verify(userService).fetchUserDetailsById(userId);
                 break;
+            default:
+                throw new IllegalArgumentException("Unexpected status value: " + expectedStatus);
         }
     }
 }
