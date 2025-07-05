@@ -10,9 +10,9 @@ pipeline {
         GITHUB_REPO_URL = 'https://github.com/arkvemuri/userinfo.git'
         BRANCH_NAME = 'master'
         APP_VERSION = '1.0.0'
-        SONAR_SERVER = 'SonarQube'
-        // Define SonarQube authentication token
-        SONAR_TOKEN = credentials('SONAR_TOKEN')
+        SONAR_PROJECT_KEY = 'userinfo'
+        // Define SonarQube credentials
+        SONARQUBE_CREDS = credentials('sonarqube-token')
     }
 
     stages {
@@ -43,11 +43,12 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv(env.SONAR_SERVER) {
+                withSonarQubeEnv('SonarQube') {
                     bat """
                         mvn sonar:sonar \
-                        -Dsonar.projectKey=userinfo \
-                        -Dsonar.projectName=userinfo \
+                        -Dsonar.host.url=http://localhost:9000 \
+                        -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} \
+                        -Dsonar.projectName=${env.SONAR_PROJECT_KEY} \
                         -Dsonar.projectVersion=${APP_VERSION} \
                         -Dsonar.sources=src/main/java \
                         -Dsonar.java.binaries=target/classes \
@@ -55,7 +56,7 @@ pipeline {
                         -Dsonar.junit.reportPaths=target/surefire-reports \
                         -Dsonar.java.coveragePlugin=jacoco \
                         -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-                        -Dsonar.login=${SONAR_TOKEN}
+                        -Dsonar.login=${SONARQUBE_CREDS_PSW}
                     """
                 }
             }
