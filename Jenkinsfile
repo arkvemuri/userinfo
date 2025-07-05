@@ -11,6 +11,8 @@ pipeline {
         BRANCH_NAME = 'master'
         APP_VERSION = '1.0.0'
         SONAR_SERVER = 'SonarQube'
+        // Define SonarQube authentication token
+        SONAR_TOKEN = credentials('SONAR_TOKEN')
     }
 
     stages {
@@ -56,7 +58,8 @@ pipeline {
                         -Dsonar.tests=src/test/java \
                         -Dsonar.junit.reportPaths=target/surefire-reports \
                         -Dsonar.java.coveragePlugin=jacoco \
-                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                        -Dsonar.login=${SONAR_TOKEN}
                     """
                 }
             }
