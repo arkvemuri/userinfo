@@ -27,20 +27,20 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build and Test') {
             steps {
                 // Use bat for Windows
-                bat 'mvn clean package'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                bat 'mvn test'
+                bat 'mvn clean verify'
             }
             post {
                 always {
                     junit '**/target/surefire-reports/*.xml'
+                    jacoco(
+                        execPattern: '**/target/jacoco.exec',
+                        classPattern: '**/target/classes',
+                        sourcePattern: '**/src/main/java',
+                        exclusionPattern: '**/src/test*'
+                    )
                 }
             }
         }
@@ -69,6 +69,18 @@ pipeline {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Coverage Check') {
+            steps {
+                script {
+                    def jacocoReport = readFile('target/site/jacoco/index.html')
+                    if (jacocoReport.contains('<td class="ctr2">') &&
+                        jacocoReport.find(/<td class="ctr2">(\d+)%<\/td>/).toInteger() < 80) {
+                        error 'Code coverage is below 80%'
+                    }
                 }
             }
         }
