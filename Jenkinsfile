@@ -11,8 +11,6 @@ pipeline {
         BRANCH_NAME = 'master'
         APP_VERSION = '1.0.0'
         SONAR_PROJECT_KEY = 'userinfo'
-        // Define SonarQube credentials
-        SONARQUBE_CREDS = credentials('sonarqube-token')
     }
 
     stages {
@@ -42,6 +40,9 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
+            environment {
+                SONAR_CREDS = credentials('sonarqube-token')
+            }
             steps {
                 withSonarQubeEnv('SonarQube') {
                     bat """
@@ -56,7 +57,7 @@ pipeline {
                         -Dsonar.junit.reportPaths=target/surefire-reports \
                         -Dsonar.java.coveragePlugin=jacoco \
                         -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-                        -Dsonar.login=${SONARQUBE_CREDS_PSW}
+                        -Dsonar.login=${SONAR_CREDS_PSW}
                     """
                 }
             }
