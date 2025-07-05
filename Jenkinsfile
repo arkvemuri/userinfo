@@ -8,6 +8,8 @@ pipeline {
 
     environment {
         GITHUB_REPO_URL = 'https://github.com/arkvemuri/userinfo.git'
+        BRANCH_NAME = 'master'
+        APP_VERSION = '1.0.0'
         SONAR_SERVER = 'SonarQube'
     }
 
@@ -16,8 +18,10 @@ pipeline {
             steps {
                 // Clean workspace before checking out code
                 cleanWs()
-                git branch: 'main',
-                    url: "${env.GITHUB_REPO_URL}"
+                git branch: "${env.BRANCH_NAME}",
+                    url: "${env.GITHUB_REPO_URL}",
+                    changelog: true,
+                    poll: true
             }
         }
 
@@ -47,6 +51,7 @@ pipeline {
                         mvn sonar:sonar \
                         -Dsonar.projectKey=userinfo \
                         -Dsonar.projectName=userinfo \
+                        -Dsonar.projectVersion=${APP_VERSION} \
                         -Dsonar.sources=src/main/java \
                         -Dsonar.java.binaries=target/classes \
                         -Dsonar.tests=src/test/java \
@@ -75,15 +80,15 @@ pipeline {
     }
 
     post {
+        success {
+            echo "Successfully built and analyzed version ${env.APP_VERSION}"
+        }
+        failure {
+            echo 'Build or analysis failed!'
+        }
         always {
             // Clean workspace after build
             cleanWs()
-        }
-        success {
-            echo 'Build succeeded!'
-        }
-        failure {
-            echo 'Build failed!'
         }
     }
 }
